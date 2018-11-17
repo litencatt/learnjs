@@ -1,6 +1,6 @@
 describe('LearnJS', function() {
-  it('can show a probrem view', function() {
-    learnjs.showView('#probrem-1');
-    expect($('.view-container .probrem-view').length).toEqual(1);
+  it('can show a problem view', function() {
+    learnjs.showView('#problem-1');
+    expect($('.view-container .problem-view').length).toEqual(1);
   });
 });
