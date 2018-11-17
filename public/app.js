@@ -1,4 +1,5 @@
 'use strict';
+
 var learnjs = {};
 
 learnjs.problemView = function(problemNumber) {
@@ -13,7 +14,7 @@ learnjs.showView = function(hash) {
   };
   var hashParts = hash.split('-');
   var viewFn = routes[hashParts[0]];
-  if(viewFn) {
+  if (viewFn) {
     $('.view-container').empty().append(viewFn(hashParts[1]));
   }
 };
