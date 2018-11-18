@@ -17,10 +17,6 @@ learnjs.template = function(name) {
   return $('.templates .' + name).clone();
 }
 
-learnjs.landingView = function() {
-  return $('.templates .landing-view');
-}
-
 learnjs.applyObject = function(obj, elem) {
   for (var key in obj) {
     elem.find('[data-name="' + key + '"]').text(obj[key]);
@@ -74,9 +70,14 @@ learnjs.problemView = function(data) {
   return view;
 };
 
+learnjs.landingView = function() {
+  return learnjs.template('landing-view');
+}
+
 learnjs.showView = function(hash) {
   var routes = {
     '#problem': learnjs.problemView,
+    '#': learnjs.landingView,
     '': learnjs.landingView
   };
   var hashParts = hash.split('-');
