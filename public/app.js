@@ -13,11 +13,22 @@ learnjs.problems = [
   },
 ];
 
+learnjs.template = function(name) {
+  return $('.templates .' + name).clone();
+}
+
 learnjs.applyObject = function(obj, elem) {
   for (var key in obj) {
     elem.find('[data-name="' + key + '"]').text(obj[key]);
   }
 };
+
+learnjs.flashElement = function(elem, content) {
+  elem.fadeOut('fast', function() {
+    elem.html(content);
+    elem.fadeIn();
+  });
+}
 
 learnjs.problemView = function(data) {
   var problemNumber = parseInt(data, 10);
@@ -63,10 +74,3 @@ learnjs.appOnReady = function() {
   };
   learnjs.showView(window.location.hash);
 };
-
-learnjs.flashElement = function(elem, content) {
-  elem.fadeOut('fast', function() {
-    elem.html(content);
-    elem.fadeIn();
-  });
-}
