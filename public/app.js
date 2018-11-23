@@ -141,8 +141,6 @@ learnjs.awsRefresh = function() {
 };
 
 function googleSignIn(googleUser) {
-  console.log(googleUser);
-
   var id_token = googleUser.getAuthResponse().id_token;
   AWS.config.update({
     region: 'us-east-1',
@@ -158,7 +156,6 @@ function googleSignIn(googleUser) {
     return gapi.auth2.getAuthInstance().signIn({
       prompt: 'login',
     }).then(function(userUpdate) {
-      console.log("refresed");
       var creds = AWS.config.credentials;
       var newToken = userUpdate.getAuthResponse().id_token;
       creds.params.Logins['accounts.google.com'] = newToken;
