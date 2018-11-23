@@ -4,3 +4,4 @@ working
 master
 package-lock.json
 node_modules
+conf/

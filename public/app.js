@@ -1,6 +1,10 @@
 'use strict';
 
-var learnjs = {};
+var learnjs = {
+  poolId: 'us-east-1:81f14349-9619-4bfe-bf0f-d391fa9ab2ab'
+};
+
+learnjs.identity = new $.Deferred();
 
 learnjs.problems = [
   {
@@ -26,6 +30,12 @@ learnjs.applyObject = function(obj, elem) {
     elem.find('[data-name="' + key + '"]').text(obj[key]);
   }
 };
+
+learnjs.addProfileLink = function(profile) {
+  var link = learnjs.template('profile-link');
+  link.find('a').text(profile.email);
+  $('.signin-bar').prepend(link);
+}
 
 learnjs.flashElement = function(elem, content) {
   elem.fadeOut('fast', function() {
@@ -87,9 +97,18 @@ learnjs.landingView = function() {
   return learnjs.template('landing-view');
 }
 
+learnjs.profileView = function() {
+  var view = learnjs.template('profile-view');
+  learnjs.identity.done(function(identity) {
+    view.find('.email').text(identity.email);
+  });
+  return view;
+}
+
 learnjs.showView = function(hash) {
   var routes = {
     '#problem': learnjs.problemView,
+    '#profile': learnjs.profileView,
     '#': learnjs.landingView,
     '': learnjs.landingView
   };
@@ -106,4 +125,51 @@ learnjs.appOnReady = function() {
     learnjs.showView(window.location.hash);
   };
   learnjs.showView(window.location.hash);
+  learnjs.identity.done(learnjs.addProfileLink);
 };
+
+learnjs.awsRefresh = function() {
+  var deferred = new $.Deferred();
+  AWS.config.credentials.refresh(function(err) {
+    if (err) {
+      deferred.reject(err);
+    } else {
+      deferred.resolve(AWS.config.credentials.identityId);
+    }
+  });
+  return deferred.promise();
+};
+
+function googleSignIn(googleUser) {
+  console.log(googleUser);
+
+  var id_token = googleUser.getAuthResponse().id_token;
+  AWS.config.update({
+    region: 'us-east-1',
+    credentials: new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: learnjs.poolId,
+      Logins: {
+        'accounts.google.com': id_token
+      }
+    })
+  })
+
+  function refresh() {
+    return gapi.auth2.getAuthInstance().signIn({
+      prompt: 'login',
+    }).then(function(userUpdate) {
+      console.log("refresed");
+      var creds = AWS.config.credentials;
+      var newToken = userUpdate.getAuthResponse().id_token;
+      creds.params.Logins['accounts.google.com'] = newToken;
+      return learnjs.awsRefresh();
+    });
+  }
+  learnjs.awsRefresh().then(function(id) {
+    learnjs.identity.resolve({
+      id: id,
+      email: googleUser.getBasicProfile().getEmail(),
+      refresh: refresh
+    });
+  });
+}
