@@ -22,7 +22,7 @@ function byCount(e1, e2) {
 
 function filterItems(items) {
   var values = [];
-  for (i in items) {
+  for (var i in items) {
     values.push([items[i], i]);
   }
   var topFive = {};
