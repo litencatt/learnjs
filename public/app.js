@@ -59,6 +59,21 @@ learnjs.fetchAnswer = function(problemId, answer) {
   });
 }
 
+learnjs.countAnswers = function(problemId) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var params = {
+      TableName: 'learnjs',
+      Select: 'COUNT',
+      FilterExpression: 'problemId = :problemId',
+      ExpressionAttributeValues: { ':problemId': problemId }
+    };
+    return learnjs.sendDbRequest(db.scan(params), function() {
+      return learnjs.countAnswers(problemId);
+    });
+  });
+}
+
 learnjs.saveAnswer = function(problemId, answer) {
   return learnjs.identity.then(function(identity) {
     var db = new AWS.DynamoDB.DocumentClient();
