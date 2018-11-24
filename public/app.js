@@ -21,6 +21,41 @@ learnjs.triggerEvent = function(name, args) {
   $('.view-container>*').trigger(name, args);
 }
 
+learnjs.sendAwsRequest = function(req, retry) {
+  var promise = new $.Deferred();
+  req.on('error', function(error) {
+    if (error.code === "CredentialsError") {
+      learnjs.identity.then(function(identity) {
+        return identity.refresh().then(function() {
+          return retry();
+        }, function() {
+          promise.reject(resp);
+        });
+      });
+    } else {
+      promise.reject(error);
+    }
+  });
+  req.on('success', function() {
+    promise.resolve(resp.data);
+  });
+  req.send();
+  return promise;
+}
+
+learnjs.popularAnswers = function(problemId) {
+  return learnjs.identity.then(function() {
+    var lambda = new AWS.Lambda();
+    var params = {
+      FunctionName: 'learnjs_popularAnswers',
+      PayLoad: JSON.stringify({problemNumber: problemId})
+    };
+    return learnjs.sendAwsRequest(lambda.invoke(params), function() {
+      return learnjs.popularAnswers(problemId);
+    })
+  })
+}
+
 learnjs.sendDbRequest = function(req, query) {
   var promise = new $.Deferred();
   req.on('error', function(error) {
