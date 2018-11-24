@@ -43,6 +43,22 @@ learnjs.sendDbRequest = function(req, query) {
   return promise;
 }
 
+learnjs.fetchAnswer = function(problemId, answer) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var item = {
+      TableName: 'learnjs',
+      Key: {
+        userId: identity.id,
+        problemId: problemId
+      }
+    };
+    return learnjs.sendDbRequest(db.get(item), function() {
+      return learnjs.fetchAnswer(problemId);
+    });
+  });
+}
+
 learnjs.saveAnswer = function(problemId, answer) {
   return learnjs.identity.then(function(identity) {
     var db = new AWS.DynamoDB.DocumentClient();
@@ -126,6 +142,12 @@ learnjs.problemView = function(data) {
       buttonItem.remove();
     });
   }
+
+  learnjs.fetchAnswer(problemNumber).then(function(data) {
+    if (data.Item) {
+      answer.val(data.Item.answer);
+    }
+  });
 
   view.find('.check-btn').click(checkAnswerClick);
   view.find('.title').text('Problem #' + problemNumber);
